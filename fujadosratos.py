@@ -13,6 +13,7 @@ TITLE = "RAT SLAYER"
 game_state = "MENU"
 image_name = "gameoverimg"
 actorimg = Actor(image_name, center=(CENTER_X, CENTER_Y))
+menuimg = Actor("menuimg", center=(CENTER_X, CENTER_Y))
 
 class GameButton: 
     def __init__(self, x, y, image, action_name):
@@ -164,9 +165,9 @@ class Itens():
 hero = Player("hero", CENTER_X, CENTER_Y, num_frames=5)
 coin = Itens("coin", CENTER_X + 200, CENTER_Y + 200)
 
-btn_start = GameButton(CENTER_X, CENTER_Y - 50, "btn_start", "START")
-btn_exit = GameButton(CENTER_X, CENTER_Y + 50, "btn_exit", "EXIT")
-btn_continue = GameButton(CENTER_X, HEIGHT - 40, "btn_continue", "CONTINUE")
+btn_start = GameButton(CENTER_X - 150, CENTER_Y + 200, "btn_start", "START")
+btn_exit = GameButton(CENTER_X + 150, CENTER_Y + 200, "btn_exit", "EXIT")
+btn_continue = GameButton(CENTER_X, HEIGHT - 80, "btn_continue", "CONTINUE")
 buttons = [btn_start, btn_exit]
 
 enemies = []
@@ -193,13 +194,16 @@ def draw():
 
     if game_state == "MENU": 
         screen.draw.text("Fuja dos Ratos", center=(CENTER_X, 100), fontsize=60, color="white")
+        menuimg.draw()
         for btn in buttons:
             btn.draw()
+            
 
     if game_state == "GAMEOVER":
         #  screen.draw.text("GAME OVER", center=(CENTER_X, CENTER_Y), fontsize=60, color="red")
          actorimg.draw()
          btn_continue.draw()
+         music.stop()
 
     if game_state == "GAME":
         for row in range(len(map)):
@@ -231,8 +235,9 @@ def update():
             if hero.actor.colliderect(enemy.actor):
                 pass
                 game_state = "GAMEOVER"
+                sounds.gameovervoice.play()
                 sounds.scream.play()
-                sounds.leratan.play()
+                # sounds.leratan.play()
 
 def on_mouse_down(pos):
     global game_state
@@ -241,18 +246,24 @@ def on_mouse_down(pos):
         for btn in buttons:
             action = btn.check_click(pos)
             if action == "START":
+                music.stop()
+                music.play("pixelatemenu")
                 reset_game()
                 game_state = "GAME"
             elif action == "EXIT":
                 quit()
 
     if game_state == "GAMEOVER":
-        sounds.chamabebe.stop()
+        # music.stop()
+        music.play("menu2")
         action = btn_continue.check_click(pos)
         if action == "CONTINUE":
-            sounds.leratan.stop()
             game_state = "MENU"
+            music.play("gameovermusic")
+            music.set_volume(0.8)
 
+music.play("gameovermusic")
+music.set_volume(0.8)
 pgzrun.go()
 
 
