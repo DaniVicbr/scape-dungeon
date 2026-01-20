@@ -8,8 +8,11 @@ WIDTH = TILE_SIZE * 12
 HEIGHT = TILE_SIZE * 9
 CENTER_X = WIDTH // 2
 CENTER_Y = HEIGHT // 2 
+TITLE = "RAT SLAYER"
 
 game_state = "MENU"
+image_name = "gameoverimg"
+actorimg = Actor(image_name, center=(CENTER_X, CENTER_Y))
 
 class GameButton: 
     def __init__(self, x, y, image, action_name):
@@ -82,7 +85,7 @@ class Player(GameObject):
     def update(self):
         self.is_moving = False
 
-        speed = 4
+        speed = 4.5
 
         if keyboard.left or keyboard.a and self.actor.left > 0:
             self.actor.x -= speed
@@ -163,7 +166,7 @@ coin = Itens("coin", CENTER_X + 200, CENTER_Y + 200)
 
 btn_start = GameButton(CENTER_X, CENTER_Y - 50, "btn_start", "START")
 btn_exit = GameButton(CENTER_X, CENTER_Y + 50, "btn_exit", "EXIT")
-btn_continue = GameButton(CENTER_X, CENTER_Y + 70, "btn_continue", "CONTINUE")
+btn_continue = GameButton(CENTER_X, HEIGHT - 40, "btn_continue", "CONTINUE")
 buttons = [btn_start, btn_exit]
 
 enemies = []
@@ -177,8 +180,13 @@ def reset_game():
     hero.actor.y = CENTER_Y
 
     for enemy in enemies:
-        enemy.actor.x = random.randint(50, 70)
-        enemy.actor.y = random.randint(50, 550)
+        enemy.actor.x = random.randint(20, 30)
+        enemy.actor.y = random.randint(20, 30)
+
+#Funcao que desenha a posicao aleatória da moeda:
+def random_coin():
+    coin.actor.x = random.randint(50, WIDTH - 50)
+    coin.actor.y = random.randint(50, HEIGHT - 50)
 
 def draw():
     screen.clear()
@@ -189,7 +197,8 @@ def draw():
             btn.draw()
 
     if game_state == "GAMEOVER":
-         screen.draw.text("GAME OVER", center=(CENTER_X, CENTER_Y), fontsize=60, color="red")
+        #  screen.draw.text("GAME OVER", center=(CENTER_X, CENTER_Y), fontsize=60, color="red")
+         actorimg.draw()
          btn_continue.draw()
 
     if game_state == "GAME":
@@ -213,14 +222,17 @@ def update():
         hero.update()
 
         if hero.actor.colliderect(coin.actor):
-             game_state = "GAMEOVER"
+            random_coin()
+            sounds.coin.play()
 
-    
         for enemy in enemies:
             enemy.update()
 
             if hero.actor.colliderect(enemy.actor):
+                pass
                 game_state = "GAMEOVER"
+                sounds.scream.play()
+                sounds.leratan.play()
 
 def on_mouse_down(pos):
     global game_state
@@ -235,9 +247,10 @@ def on_mouse_down(pos):
                 quit()
 
     if game_state == "GAMEOVER":
-
+        sounds.chamabebe.stop()
         action = btn_continue.check_click(pos)
         if action == "CONTINUE":
+            sounds.leratan.stop()
             game_state = "MENU"
 
 pgzrun.go()
