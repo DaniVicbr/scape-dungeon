@@ -9,7 +9,6 @@ HEIGHT = TILE_SIZE * 9
 CENTER_X = WIDTH // 2
 CENTER_Y = HEIGHT // 2 
 
-
 game_state = "MENU"
 
 class GameButton: 
@@ -148,10 +147,23 @@ class Enemy(GameObject):
             
         self.animate()
 
+class Itens():
+    def __init__(self, item_name, x, y):
+        self.actor = Actor(f"{item_name}", center=(x, y))
+        self.item_name = item_name
+        self.x = x 
+        self.y = y
+
+    def draw(self):
+        self.actor.draw()
+
+
 hero = Player("hero", CENTER_X, CENTER_Y, num_frames=5)
+coin = Itens("coin", CENTER_X + 200, CENTER_Y + 200)
 
 btn_start = GameButton(CENTER_X, CENTER_Y - 50, "btn_start", "START")
 btn_exit = GameButton(CENTER_X, CENTER_Y + 50, "btn_exit", "EXIT")
+btn_continue = GameButton(CENTER_X, CENTER_Y + 70, "btn_continue", "CONTINUE")
 buttons = [btn_start, btn_exit]
 
 enemies = []
@@ -159,6 +171,14 @@ enemies = []
 for i in range(10):
     en = Enemy("enemy", random.randint(50, 70), random.randint(50, 550), num_frames=6)
     enemies.append(en)
+
+def reset_game():
+    hero.actor.x = CENTER_X
+    hero.actor.y = CENTER_Y
+
+    for enemy in enemies:
+        enemy.actor.x = random.randint(50, 70)
+        enemy.actor.y = random.randint(50, 550)
 
 def draw():
     screen.clear()
@@ -170,6 +190,7 @@ def draw():
 
     if game_state == "GAMEOVER":
          screen.draw.text("GAME OVER", center=(CENTER_X, CENTER_Y), fontsize=60, color="red")
+         btn_continue.draw()
 
     if game_state == "GAME":
         for row in range(len(map)):
@@ -180,6 +201,7 @@ def draw():
                 screen.blit(title, (x,y))
 
         hero.draw()
+        coin.draw()
         for enemy in enemies:
             enemy.draw()
 
@@ -189,6 +211,10 @@ def update():
 
     if game_state == "GAME":
         hero.update()
+
+        if hero.actor.colliderect(coin.actor):
+             game_state = "GAMEOVER"
+
     
         for enemy in enemies:
             enemy.update()
@@ -203,9 +229,16 @@ def on_mouse_down(pos):
         for btn in buttons:
             action = btn.check_click(pos)
             if action == "START":
+                reset_game()
                 game_state = "GAME"
             elif action == "EXIT":
                 quit()
+
+    if game_state == "GAMEOVER":
+
+        action = btn_continue.check_click(pos)
+        if action == "CONTINUE":
+            game_state = "MENU"
 
 pgzrun.go()
 
