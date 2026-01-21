@@ -1,7 +1,6 @@
 import pgzrun
 import random
 
-
 TILE_SIZE = 64
 
 WIDTH = TILE_SIZE * 12
@@ -14,6 +13,8 @@ game_state = "MENU"
 image_name = "gameoverimg"
 actorimg = Actor(image_name, center=(CENTER_X, CENTER_Y))
 menuimg = Actor("menuimg", center=(CENTER_X, CENTER_Y))
+
+DEBUG_MODE = False
 
 class GameButton: 
     def __init__(self, x, y, image, action_name):
@@ -32,7 +33,7 @@ class GameButton:
 tiles = ["tile001", "tile002", "tile003", "tile004", "tile005", "tile006", "key", "door"]
 
 map = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
@@ -86,7 +87,7 @@ class Player(GameObject):
     def update(self):
         self.is_moving = False
 
-        speed = 4.5
+        speed = 6 #4.5
 
         if keyboard.left or keyboard.a and self.actor.left > 0:
             self.actor.x -= speed
@@ -104,6 +105,8 @@ class Player(GameObject):
             self.actor.y += speed 
             self.is_moving = True
             self.direction = "down"
+
+        self.hitbox = self.actor._rect.inflate(-30, -30)
         
         self.animate()
 
@@ -115,7 +118,7 @@ class Enemy(GameObject):
         self.current_action = 0  
         
     def update(self):
-        speed = 6 
+        speed = 7
         
 
         self.move_timer -= 1
@@ -148,6 +151,8 @@ class Enemy(GameObject):
         elif self.current_action == 4 and self.actor.right < WIDTH:
             self.actor.x += speed
             # self.direction = "right"
+        
+        self.hitbox = self.actor._rect.inflate(-50, -50)
             
         self.animate()
 
@@ -172,7 +177,7 @@ buttons = [btn_start, btn_exit]
 
 enemies = []
 
-for i in range(10):
+for i in range(30):
     en = Enemy("enemy", random.randint(50, 70), random.randint(50, 550), num_frames=6)
     enemies.append(en)
 
@@ -217,7 +222,19 @@ def draw():
         coin.draw()
         for enemy in enemies:
             enemy.draw()
+             # --- AQUI COMEÇA A VISUALIZAÇÃO DOS RECTs ---
+        if DEBUG_MODE:
+            # Desenha retângulo VERMELHO em volta do herói
+            screen.draw.rect(hero.hitbox.rect, (255, 0, 0)) 
+            
+            # Desenha retângulo AMARELO em volta da moeda
+            screen.draw.rect(coin.actor._rect, (255, 255, 0))
 
+            # Desenha retângulo ROXO em volta dos inimigos
+            for enemy in enemies:
+                screen.draw.rect(enemy.hitbox.rect, (128, 0, 128))
+        # ---------------------------------------------
+            
 
 def update():
     global game_state
@@ -229,10 +246,11 @@ def update():
             random_coin()
             sounds.coin.play()
 
+
         for enemy in enemies:
             enemy.update()
 
-            if hero.actor.colliderect(enemy.actor):
+            if hero.hitbox.colliderect(enemy.hitbox):
                 pass
                 game_state = "GAMEOVER"
                 sounds.gameovervoice.play()
